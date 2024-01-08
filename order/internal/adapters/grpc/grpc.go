@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/bishtpramod19/microservices-proto/golang/order"
-	"github.com/bishtpramod19/storeMicroservice/order/internal/application/core/domain"
+	"github.com/bishtpramod19/microservices/order/order/internal/application/core/domain"
 )
 
 func (a Adapter) Create(ctx context.Context, request *order.CreateOrderRequest) (*order.CreateOrderResponse, error) {
 	var orderItems []domain.OrderItem
+
 	for _, orderItem := range request.OrderItems {
 		orderItems = append(orderItems, domain.OrderItem{
 			ProductCode: orderItem.ProductCode,
@@ -23,6 +24,6 @@ func (a Adapter) Create(ctx context.Context, request *order.CreateOrderRequest) 
 		return nil, err
 	}
 
-	return &order.CreateOrderResponse{OrderId: result.ID}, nil
+	return &order.CreateOrderResponse{OrderId: result.Id}, nil
 
 }

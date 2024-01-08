@@ -3,14 +3,14 @@ package db
 import (
 	"fmt"
 
-	"github.com/bishtpramod19/storeMicroservice/order/internal/application/core/domain"
+	"github.com/bishtpramod19/microservices/order/order/internal/application/core/domain"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 type Order struct {
 	gorm.Model
-	CustomerID int64
+	CustomerId int64
 	Status     string
 	OrderItems []OrderItem
 }
@@ -20,7 +20,7 @@ type OrderItem struct {
 	ProductCode string
 	UnitPrice   float32
 	Quantity    int32
-	OrderID     uint
+	OrderId     uint
 }
 
 type Adapter struct {
@@ -28,17 +28,17 @@ type Adapter struct {
 }
 
 func NewAdapter(dataSourceUrl string) (*Adapter, error) {
-	db, connErr := gorm.Open(mysql.Open(dataSourceUrl), &gorm.Config{})
-	if connErr != nil {
-		return nil, fmt.Errorf("db connection error : %v", connErr)
+	db, openErr := gorm.Open(mysql.Open(dataSourceUrl), &gorm.Config{})
+	if openErr != nil {
+		return nil, fmt.Errorf("db connection error: %v", openErr)
 	}
+
 	err := db.AutoMigrate(&Order{}, OrderItem{})
 	if err != nil {
-		return nil, fmt.Errorf("db migration error: %v", err)
+		return nil, fmt.Errorf("db migration error : %v", err)
 	}
 
 	return &Adapter{db: db}, nil
-
 }
 
 func (a Adapter) Get(id string) (domain.Order, error) {
@@ -54,8 +54,8 @@ func (a Adapter) Get(id string) (domain.Order, error) {
 	}
 
 	order := domain.Order{
-		ID:         int64(orderEntity.ID),
-		CustomerID: orderEntity.CustomerID,
+		Id:         int64(orderEntity.ID),
+		CustomerId: orderEntity.CustomerId,
 		Status:     orderEntity.Status,
 		OrderItems: orderItems,
 		CreatedAt:  orderEntity.CreatedAt.UnixNano(),
@@ -73,20 +73,17 @@ func (a Adapter) Save(order *domain.Order) error {
 			UnitPrice:   orderItem.UnitPrice,
 			Quantity:    orderItem.Quantity,
 		})
-
 	}
 
 	orderModel := Order{
-		CustomerID: order.CustomerID,
+		CustomerId: order.CustomerId,
 		Status:     order.Status,
 		OrderItems: orderItems,
 	}
 
 	res := a.db.Create(&orderModel)
 	if res.Error == nil {
-		order.ID = int64(orderModel.ID)
+		order.Id = int64(orderModel.ID)
 	}
-
 	return res.Error
-
 }
